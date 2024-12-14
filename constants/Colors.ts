@@ -1,26 +1,20 @@
-/**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
- */
-
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
-
-export const Colors = {
-  light: {
-    text: '#11181C',
-    background: '#fff',
-    tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
-  },
-  dark: {
-    text: '#ECEDEE',
-    background: '#151718',
-    tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
-  },
-};
+export default {
+    light: {
+        BACKGROUND_COLOR: '#fbfbfb',
+        PRIMARY: 'hsl(50, 89%, 50%)',
+        PRIMARY_TEXT: 'hsl(50, 100%, 13%)',
+        SECONDARY: 'hsl(30, 89%, 50%)',
+        DANGER: 'hsl(0, 89%, 50%)',
+        SUCCESS: 'hsl(129, 89%, 50%)',
+        INFO: 'hsl(207, 89%, 50%)',
+    },
+    dark: {
+        BACKGROUND_COLOR: '#121212',
+        PRIMARY: 'hsl(50, 97%, 57%)',
+        PRIMARY_TEXT: 'hsl(50, 100%, 13%)',
+        SECONDARY: 'hsl(30, 93%, 56%)',
+        DANGER: 'hsl(0, 88%, 57%)',
+        SUCCESS: 'hsl(129, 95%, 59%)',
+        INFO: 'hsl(207, 97%, 59%)',
+    }
+}
