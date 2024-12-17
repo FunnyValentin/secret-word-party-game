@@ -4,8 +4,7 @@ import {useFonts} from "expo-font";
 import Divider from "@/components/Divider";
 import ProfileCard from "@/components/ProfileCard";
 import ThemeSelector from "@/components/ThemeSelector";
-
-
+import RoomList from "@/components/RoomList";
 
 export default function BuscarSala() {
     const { colors } = useTheme();
@@ -24,6 +23,8 @@ export default function BuscarSala() {
             <Divider width={1} dividerStyles={styles.titleDivider}></Divider>
             <Text style={[styles.subtitle,  {color: colors.TEXT}]}>Perfil</Text>
             <ProfileCard/>
+            <Divider width={1} dividerStyles={styles.titleDivider}></Divider>
+            <RoomList/>
             <ThemeSelector/>
         </View>
     )
@@ -40,6 +41,7 @@ const styles = StyleSheet.create({
         alignSelf: "center",
     },
     titleDivider: {
+        marginBottom: 15,
         width: "92%",
         alignSelf: "center",
     },

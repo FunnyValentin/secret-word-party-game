@@ -82,7 +82,7 @@ const ProfileCard = () => {
             alignItems: "center",
         },
         avatarLabel: {
-            color: colors.TEXT,
+            color: colors.TEXT_SECONDARY,
             fontSize: 16,
             fontWeight: "bold",
         },
@@ -90,7 +90,7 @@ const ProfileCard = () => {
             gap: 8,
         },
         nameLabel: {
-            color: colors.TEXT,
+            color: colors.TEXT_SECONDARY,
             fontSize: 16,
             fontWeight: "bold",
         },

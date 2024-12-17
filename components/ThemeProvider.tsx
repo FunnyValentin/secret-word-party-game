@@ -3,7 +3,7 @@ import { useColorScheme } from 'react-native';
 
 const themes = {
     light: {
-        BACKGROUND: '#f8f7f0',
+        BACKGROUND: '#efefe7',
         TEXT: '#070707',
         TEXT_SECONDARY: '#6a6a6a',
         CARD_BACKGROUND: '#fbf9f5',
