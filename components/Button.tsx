@@ -1,4 +1,4 @@
-import { StyleSheet, View, Pressable, Text } from "react-native";
+import {StyleSheet, View, Pressable, Text, ViewStyle, TextStyle} from "react-native";
 import { useFonts } from "expo-font";
 import { useTheme } from "@/components/ThemeProvider";
 
@@ -6,9 +6,14 @@ type Props = {
     label: string;
     onPress: () => void;
     variant?: "primary" | "secondary" | "danger" | "success" | "info";
+    additionalStyles?: {
+        container?: ViewStyle;
+        button?: ViewStyle;
+        label?: TextStyle;
+    };
 };
 
-export default function Button({ label, onPress, variant }: Props) {
+export default function Button({ label, onPress, variant, additionalStyles }: Props) {
     const [fontsLoaded] = useFonts({
         "Lexend-SemiBold": require("../assets/fonts/Lexend-SemiBold.ttf"),
     });
@@ -48,16 +53,16 @@ export default function Button({ label, onPress, variant }: Props) {
     // Always return a valid component
     if (!fontsLoaded) {
         return (
-            <View style={styles.loadingContainer}>
+            <View style={[styles.loadingContainer, additionalStyles?.container]}>
                 <Text style={styles.loadingText}>Cargando fuentes...</Text>
             </View>
         );
     }
 
     return (
-        <View style={variantStyles.container}>
-            <Pressable style={styles.button} onPress={onPress}>
-                <Text style={variantStyles.label}>{label}</Text>
+        <View style={[variantStyles.container, additionalStyles?.container]}>
+            <Pressable style={[styles.button, additionalStyles?.button]} onPress={onPress}>
+                <Text style={[variantStyles.label, additionalStyles?.label]}>{label}</Text>
             </Pressable>
         </View>
     );

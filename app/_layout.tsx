@@ -1,5 +1,4 @@
 import { Stack } from "expo-router";
-import {returnStatement} from "@babel/types";
 import {ThemeProvider} from "@/components/ThemeProvider";
 
 export default function RootLayout() {

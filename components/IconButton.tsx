@@ -1,15 +1,21 @@
-import { StyleSheet, View, Pressable, Text } from "react-native";
+import {StyleSheet, View, Pressable, Text, TextStyle, ViewStyle} from "react-native";
 import { useTheme } from "@/components/ThemeProvider";
 import { MaterialIcons } from "@expo/vector-icons";
 
 type Props = {
     icon: keyof typeof MaterialIcons.glyphMap; // Ensure the icon prop matches a valid MaterialIcons name
     onPress: () => void;
-    variant?: "primary" | "secondary" | "danger" | "success" | "info";
+    variant?: "primary" | "secondary" | "danger" | "success" | "info" | "ghost";
     label?: string;
+    additionalStyles?: {
+        container?: ViewStyle;
+        button?: ViewStyle;
+        icon?: TextStyle;
+        text?: TextStyle;
+    };
 };
 
-export default function IconButton({ icon, onPress, variant, label }: Props) {
+export default function IconButton({ icon, onPress, variant, label, additionalStyles }: Props) {
     const { colors } = useTheme();
 
     const variants = {
@@ -37,17 +43,35 @@ export default function IconButton({ icon, onPress, variant, label }: Props) {
             container: [styles.buttonContainer, { backgroundColor: colors.INFO }],
             icon: [styles.buttonIcon, { color: colors.TEXT }],
         },
+        ghost: {
+            container: [styles.buttonContainer],
+            icon: [styles.buttonIcon, { color: colors.TEXT_SECONDARY }],
+        }
     };
 
     const variantStyles = variants[variant || "default"];
 
     return (
-        <View style={variantStyles.container}>
-            <Pressable style={styles.button} onPress={onPress}>
-                <MaterialIcons name={icon} style={variantStyles.icon} />
-                {label && <Text style={[styles.buttonText, { color: (variantStyles.icon[1] as { color: string }).color }]}>
-                    {label}
-                </Text>}
+        <View style={[variantStyles.container, additionalStyles?.container]}>
+            <Pressable
+                style={[styles.button, additionalStyles?.button]}
+                onPress={onPress}
+            >
+                <MaterialIcons
+                    name={icon}
+                    style={[variantStyles.icon, additionalStyles?.icon]}
+                />
+                {label && (
+                    <Text
+                        style={[
+                            styles.buttonText,
+                            { color: (variantStyles.icon[1] as { color: string }).color },
+                            additionalStyles?.text
+                        ]}
+                    >
+                        {label}
+                    </Text>
+                )}
             </Pressable>
         </View>
     );

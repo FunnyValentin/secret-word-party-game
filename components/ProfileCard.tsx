@@ -132,7 +132,7 @@ const ProfileCard = () => {
                     />
                 ) : (
                     <TouchableOpacity onPress={handleEditName}>
-                        <Text style={styles.nameLabel}>Name</Text>
+                        <Text style={styles.nameLabel}>Nombre</Text>
                         <Text style={styles.nameText}>{name}</Text>
                     </TouchableOpacity>
                 )}
