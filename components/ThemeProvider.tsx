@@ -1,5 +1,8 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { useColorScheme } from 'react-native';
+import { io, Socket } from 'socket.io-client';
+import socketService from "@/services/SocketService";
+
 
 const themes = {
     light: {
@@ -38,18 +41,37 @@ type ThemeContextType = {
     theme: Theme;
     setTheme: (theme: Theme) => void;
     colors: typeof themes.light;
+    socket: Socket | null;
+    isConnected: boolean;
 };
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
-    const systemTheme = useColorScheme(); // Detect system theme (light/dark)
-    const [theme, setTheme] = useState<Theme>(systemTheme || 'light'); // Allow overriding
+    const systemTheme = useColorScheme();
+    const [theme, setTheme] = useState<Theme>(systemTheme || 'light');
+    const [isConnected, setIsConnected] = useState(false);
 
     const colors = themes[theme];
 
+    useEffect(() => {
+        socketService.connect();
+        socketService.addConnectionListener(setIsConnected);
+
+        return () => {
+            socketService.removeConnectionListener(setIsConnected);
+            socketService.disconnect();
+        };
+    }, []);
+
     return (
-        <ThemeContext.Provider value={{ theme, setTheme, colors }}>
+        <ThemeContext.Provider value={{
+            theme,
+            setTheme,
+            colors,
+            socket: socketService.getSocket(),
+            isConnected
+        }}>
             {children}
         </ThemeContext.Provider>
     );
@@ -61,4 +83,12 @@ export const useTheme = () => {
         throw new Error('useTheme must be used within a ThemeProvider');
     }
     return context;
+};
+
+export const useSocket = () => {
+    const context = useContext(ThemeContext);
+    if (!context) {
+        throw new Error('useSocket must be used within a ThemeProvider');
+    }
+    return { socket: context.socket, isConnected: context.isConnected };
 };

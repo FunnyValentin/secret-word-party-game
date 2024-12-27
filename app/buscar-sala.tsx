@@ -2,9 +2,9 @@ import {StyleSheet, View, Text} from "react-native";
 import {useTheme} from "@/components/ThemeProvider";
 import {useFonts} from "expo-font";
 import Divider from "@/components/Divider";
-import ProfileCard from "@/components/ProfileCard";
+import ProfileCard from "@/components/room-list-components/ProfileCard";
 import ThemeSelector from "@/components/ThemeSelector";
-import RoomList from "@/components/RoomList";
+import RoomList from "@/components/room-list-components/RoomList";
 
 export default function BuscarSala() {
     const { colors } = useTheme();

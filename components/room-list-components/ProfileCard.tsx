@@ -6,13 +6,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ProfileCard = () => {
     const { colors } = useTheme();
-    const [name, setName] = useState("John Doe");
+    const [name, setName] = useState("");
     const [isEditingName, setIsEditingName] = useState(false);
     const [profilePicture, setProfilePicture] = useState<string>("");
 
     const STORAGE_KEY = "player_profile";
 
-    // Save profile to AsyncStorage
     const saveProfile = async (profileData: { name: string; profilePicture: string }) => {
         try {
             await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(profileData));
@@ -21,7 +20,6 @@ const ProfileCard = () => {
         }
     };
 
-    // Load profile from AsyncStorage
     const loadProfile = async () => {
         try {
             const savedProfile = await AsyncStorage.getItem(STORAGE_KEY);
@@ -59,7 +57,7 @@ const ProfileCard = () => {
         }
     };
 
-    const defaultPictureImage = require("../assets/images/default-pfp.png");
+    const defaultPictureImage = require("../../assets/images/default-pfp.png");
 
     const styles = StyleSheet.create({
         container: {

@@ -15,7 +15,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/logo.svg",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.anonymous.palabrasecreta"
     },
     "web": {
       "bundler": "metro",
