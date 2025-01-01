@@ -15,6 +15,7 @@ import React, {useState} from "react";
 import {useTheme} from "@/components/ThemeProvider";
 import useRoomValidation from "@/hooks/useRoomValidation";
 import socketService from "@/services/SocketService";
+import {router} from "expo-router";
 
 type RoomCreationFormProps = {
     onBack: () => void;
@@ -43,9 +44,12 @@ export default function RoomCreationForm({ onBack, hostName, hostAvatar }: RoomC
             handleCreateRoom()
             socketService.onRoomCreated(({ roomCode }) => {
                 console.log('Room created:', roomCode);
+                socketService.setJoinedRoom(roomCode)
             });
-            onBack();
             resetErrors();
+            setTimeout(() => {
+                router.push("/game");
+            }, 200)
         }
     };
 

@@ -4,23 +4,16 @@ import {
     View,
     Text,
     FlatList,
-    TextInput,
-    Switch,
-    ScrollView,
-    KeyboardAvoidingView,
-    Platform,
-    Keyboard, TouchableWithoutFeedback,
     TouchableOpacity, Alert
 } from "react-native";
 import { useTheme } from "@/components/ThemeProvider";
 import { useFonts } from "expo-font";
 import IconButton from "@/components/IconButton";
 import Divider from "@/components/Divider";
-import { Room } from "@/types/Types";
-import Button from "@/components/Button";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import RoomCreationForm from "@/components/room-list-components/RoomCreationForm";
 import socketService, {RoomListItem} from "@/services/SocketService";
+import {router} from "expo-router";
 
 export default function RoomList () {
     const [rooms, setRooms] = useState<RoomListItem[]>([]);
@@ -37,7 +30,6 @@ export default function RoomList () {
     useEffect(() => {
         loadProfile().then(() => {
             console.log("Perfil cargado.");
-            console.log(process.env.EXPO_PUBLIC_SOCKET_URL)
         });
         reloadRooms();
     }, []);
@@ -99,6 +91,12 @@ export default function RoomList () {
             playerName: hostName,
             playerAvatar: hostProfilePicture
         })
+        socketService.onJoinedRoom(({roomCode}) => {
+            socketService.setJoinedRoom(roomCode)
+        })
+        setTimeout(() => {
+            router.push("/game");
+        }, 200)
     };
 
     const styles = StyleSheet.create({

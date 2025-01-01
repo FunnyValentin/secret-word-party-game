@@ -1,6 +1,5 @@
 import { io, Socket } from 'socket.io-client';
 
-// Define events as string literals instead of an object
 export type ServerEvents = {
     createRoom: 'createRoom';
     roomCreated: 'roomCreated';
@@ -45,12 +44,14 @@ export interface GameState {
     word: string | null;
     impostorID: string | null;
     votes: Record<string, string>;
+    state: "WAITING" | "CHOOSING_CATEGORY" | "PLAYING" | "END";
 }
 
 export interface Room {
     roomName: string;
     players: Player[];
     maxPlayers: number;
+    bannedCategories: string[];
     gameState: GameState;
 }
 
@@ -87,6 +88,7 @@ export interface ServerToClientEvents {
     joinedRoom: (data: { roomCode: string }) => void;
     roomList: (rooms: RoomListItem[]) => void;
     roomInfo: (room: Room) => void;
+    updateGameState: (state: GameState) => void;
     playerList: (players: Player[]) => void;
     error: (message: string) => void;
 }
@@ -95,7 +97,8 @@ export interface ClientToServerEvents {
     createRoom: (payload: CreateRoomPayload) => void;
     joinRoom: (payload: JoinRoomPayload) => void;
     getRooms: () => void;
-    getRoomInfo: () => void;
+    getRoomInfo: (roomCode: string) => void;
+    setChoosingCategory: (roomCode: string) => void;
     playerDisconnect: () => void;
 }
 
@@ -103,6 +106,7 @@ export type SocketInstance = Socket<ServerToClientEvents, ClientToServerEvents>;
 
 class SocketService {
     private socket: SocketInstance | null = null;
+    private joinedRoom: string = '';
     private connectionListeners: Set<(isConnected: boolean) => void> = new Set();
 
     connect() {
@@ -128,7 +132,7 @@ class SocketService {
         if (!this.socket) return;
 
         this.socket.on('connect', () => {
-            console.log('Socket connected');
+            console.log('Socket connected. ID:', this.socket!.id);
             this.notifyConnectionListeners(true);
         });
 
@@ -140,6 +144,14 @@ class SocketService {
         this.socket.on('error', (message) => {
             console.error('Socket error:', message);
         });
+    }
+
+    setJoinedRoom(roomCode: string) {
+        this.joinedRoom = roomCode;
+    }
+
+    getJoinedRoom() {
+        return this.joinedRoom;
     }
 
     // Room creation
@@ -170,12 +182,20 @@ class SocketService {
     }
 
     // Room info
-    getRoomInfo() {
-        this.socket?.emit('getRoomInfo');
+    getRoomInfo(roomCode: string) {
+        this.socket?.emit('getRoomInfo', roomCode);
     }
 
     onRoomInfo(callback: (room: Room) => void) {
         this.socket?.on('roomInfo', callback);
+    }
+
+    setChoosingCategory(roomCode: string) {
+        this.socket?.emit('setChoosingCategory', roomCode)
+    }
+
+    onGameStateUpdate(callback: (state: GameState) => void) {
+        this.socket?.on('updateGameState', callback)
     }
 
     // Player management
