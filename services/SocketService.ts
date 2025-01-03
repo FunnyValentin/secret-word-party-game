@@ -8,33 +8,32 @@ export type ServerEvents = {
     getRooms: 'getRooms';
     roomList: 'roomList';
     getRoomInfo: 'getRoomInfo';
-    roomInfo: 'RoomInfo';
+    roomInfo: 'roomInfo';
+    wordCategories: 'wordCategories';
     playerList: 'playerList';
     playerDisconnect: 'playerDisconnect';
     error: 'error';
 };
 
-export const EVENTS: ServerEvents = {
-    createRoom: 'createRoom',
-    roomCreated: 'roomCreated',
-    joinRoom: 'joinRoom',
-    joinedRoom: 'joinedRoom',
-    getRooms: 'getRooms',
-    roomList: 'roomList',
-    getRoomInfo: 'getRoomInfo',
-    roomInfo: 'RoomInfo',
-    playerList: 'playerList',
-    playerDisconnect: 'playerDisconnect',
-    error: 'error',
-};
+// export const EVENTS: ServerEvents = {
+//     createRoom: 'createRoom',
+//     roomCreated: 'roomCreated',
+//     joinRoom: 'joinRoom',
+//     joinedRoom: 'joinedRoom',
+//     getRooms: 'getRooms',
+//     roomList: 'roomList',
+//     getRoomInfo: 'getRoomInfo',
+//     roomInfo: 'RoomInfo',
+//     playerList: 'playerList',
+//     playerDisconnect: 'playerDisconnect',
+//     error: 'error',
+// };
 
 // Types for data structures
 export interface Player {
     id: string;
     name?: string;
-    hostName?: string;
     avatar?: string;
-    hostAvatar?: string;
     isHost: boolean;
     score: number;
 }
@@ -88,6 +87,7 @@ export interface ServerToClientEvents {
     joinedRoom: (data: { roomCode: string }) => void;
     roomList: (rooms: RoomListItem[]) => void;
     roomInfo: (room: Room) => void;
+    wordCategories: (categories: string[]) => void;
     updateGameState: (state: GameState) => void;
     playerList: (players: Player[]) => void;
     error: (message: string) => void;
@@ -190,12 +190,24 @@ class SocketService {
         this.socket?.on('roomInfo', callback);
     }
 
+    offRoomInfo(callback: (room: Room) => void) {
+        this.socket?.off('roomInfo', callback);
+    }
+
     setChoosingCategory(roomCode: string) {
         this.socket?.emit('setChoosingCategory', roomCode)
     }
 
+    onCategories(callback: (categories: string[]) => void) {
+        this.socket?.on('wordCategories', callback)
+    }
+
     onGameStateUpdate(callback: (state: GameState) => void) {
         this.socket?.on('updateGameState', callback)
+    }
+
+    offGameStateUpdate(callback: (state: GameState) => void) {
+        this.socket?.off('updateGameState', callback)
     }
 
     // Player management

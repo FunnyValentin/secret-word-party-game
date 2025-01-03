@@ -40,10 +40,8 @@ export default function RoomCreationForm({ onBack, hostName, hostAvatar }: RoomC
         });
 
         if (isValid) {
-            console.log("Creating room:", { roomName, isPasswordProtected, password, maxPlayers });
             handleCreateRoom()
             socketService.onRoomCreated(({ roomCode }) => {
-                console.log('Room created:', roomCode);
                 socketService.setJoinedRoom(roomCode)
             });
             resetErrors();

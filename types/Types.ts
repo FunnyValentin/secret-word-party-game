@@ -1,4 +1,5 @@
 import TcpSocket from 'react-native-tcp-socket';
+import {Player} from "@/services/SocketService";
 
 export type Room = {
     roomName: string;
@@ -9,11 +10,4 @@ export type Room = {
     broadcast: (message: any) => void;
     addPlayer: (player: Player) => void;
     removePlayer: (socket: TcpSocket.Socket) => void;
-};
-
-export type Player = {
-    name: string;
-    avatar: string;
-    score: number;
-    socket: TcpSocket.Socket;
 };
