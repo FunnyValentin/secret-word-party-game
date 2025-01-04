@@ -1,8 +1,8 @@
 import React from "react";
 import { FlatList, StyleSheet, Text, View, Image } from "react-native";
 import { Player } from "@/services/SocketService";
-import {useTheme} from "@/components/ThemeProvider";
-import {useFonts} from "expo-font";
+import { useTheme } from "@/components/ThemeProvider";
+import { useFonts } from "expo-font";
 
 type PlayerListProps = {
     players: Player[];
@@ -14,9 +14,14 @@ export default function PlayerList({ players }: PlayerListProps) {
         "Lexend-SemiBold": require('../../assets/fonts/Lexend-SemiBold.ttf'),
     });
 
+    if (!fontsLoaded) {
+        return <Text style={{ textAlign: "center", marginTop: 20 }}>Cargando fuentes...</Text>;
+    }
+
     const styles = StyleSheet.create({
         listContainer: {
             flex: 1,
+            width: "100%",
         },
         title: {
             fontSize: 36,
@@ -26,7 +31,6 @@ export default function PlayerList({ players }: PlayerListProps) {
         },
         listContent: {
             padding: 16,
-            flexGrow: 1,
         },
         playerContainer: {
             flexDirection: "row",
@@ -58,13 +62,12 @@ export default function PlayerList({ players }: PlayerListProps) {
         },
     });
 
-
     const renderPlayer = ({ item }: { item: Player }) => (
         <View style={styles.playerContainer}>
-            {item.avatar && <Image
-                source={item.avatar ? { uri: item.avatar }: require("../../assets/images/default-pfp.png")}
+            <Image
+                source={item.avatar ? { uri: item.avatar } : require("../../assets/images/default-pfp.png")}
                 style={styles.avatar}
-            />}
+            />
             <View style={styles.infoContainer}>
                 <Text style={[styles.name, item.isHost && styles.host]}>
                     {item.name || "Player"}
@@ -73,12 +76,6 @@ export default function PlayerList({ players }: PlayerListProps) {
             </View>
         </View>
     );
-
-    if (!fontsLoaded) {
-        return(
-            <Text>Cargando fuentes...</Text>
-        )
-    }
 
     return (
         <View style={styles.listContainer}>

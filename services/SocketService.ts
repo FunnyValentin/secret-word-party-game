@@ -1,33 +1,5 @@
 import { io, Socket } from 'socket.io-client';
-
-export type ServerEvents = {
-    createRoom: 'createRoom';
-    roomCreated: 'roomCreated';
-    joinRoom: 'joinRoom';
-    joinedRoom: 'joinedRoom';
-    getRooms: 'getRooms';
-    roomList: 'roomList';
-    getRoomInfo: 'getRoomInfo';
-    roomInfo: 'roomInfo';
-    wordCategories: 'wordCategories';
-    playerList: 'playerList';
-    playerDisconnect: 'playerDisconnect';
-    error: 'error';
-};
-
-// export const EVENTS: ServerEvents = {
-//     createRoom: 'createRoom',
-//     roomCreated: 'roomCreated',
-//     joinRoom: 'joinRoom',
-//     joinedRoom: 'joinedRoom',
-//     getRooms: 'getRooms',
-//     roomList: 'roomList',
-//     getRoomInfo: 'getRoomInfo',
-//     roomInfo: 'RoomInfo',
-//     playerList: 'playerList',
-//     playerDisconnect: 'playerDisconnect',
-//     error: 'error',
-// };
+import {CategorySelectionProps} from "@/components/game-screen-components/CategorySelection";
 
 // Types for data structures
 export interface Player {
@@ -40,7 +12,10 @@ export interface Player {
 
 export interface GameState {
     round: number;
+    category: string | null;
     word: string | null;
+    region: "Argentina" | "Internacional";
+    bannedCategories: string[];
     impostorID: string | null;
     votes: Record<string, string>;
     state: "WAITING" | "CHOOSING_CATEGORY" | "PLAYING" | "END";
@@ -50,7 +25,6 @@ export interface Room {
     roomName: string;
     players: Player[];
     maxPlayers: number;
-    bannedCategories: string[];
     gameState: GameState;
 }
 
@@ -87,7 +61,7 @@ export interface ServerToClientEvents {
     joinedRoom: (data: { roomCode: string }) => void;
     roomList: (rooms: RoomListItem[]) => void;
     roomInfo: (room: Room) => void;
-    wordCategories: (categories: string[]) => void;
+    wordCategories: (categories: { argentina: string[], internacional: string[]}) => void;
     updateGameState: (state: GameState) => void;
     playerList: (players: Player[]) => void;
     error: (message: string) => void;
@@ -99,6 +73,7 @@ export interface ClientToServerEvents {
     getRooms: () => void;
     getRoomInfo: (roomCode: string) => void;
     setChoosingCategory: (roomCode: string) => void;
+    startGame: (roomCode: string, region: "Argentina" | "Internacional", bannedCategories: string[]) => void;
     playerDisconnect: () => void;
 }
 
@@ -198,8 +173,12 @@ class SocketService {
         this.socket?.emit('setChoosingCategory', roomCode)
     }
 
-    onCategories(callback: (categories: string[]) => void) {
+    onCategories(callback: (data: { argentina: string[], internacional: string[]}) => void) {
         this.socket?.on('wordCategories', callback)
+    }
+
+    startGame(roomCode: string, region: "Argentina" | "Internacional", bannedCategories: string[]) {
+        this.socket?.emit('startGame', roomCode, region, bannedCategories);
     }
 
     onGameStateUpdate(callback: (state: GameState) => void) {

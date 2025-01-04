@@ -20,7 +20,6 @@ export default function Button({ label, onPress, variant, additionalStyles }: Pr
 
     const { colors } = useTheme();
 
-    // Define styles for variants
     const variants = {
         primary: {
             container: [styles.buttonContainer, { backgroundColor: colors.PRIMARY }],
@@ -35,22 +34,21 @@ export default function Button({ label, onPress, variant, additionalStyles }: Pr
             label: [styles.buttonLabel, { color: colors.TEXT }],
         },
         danger: {
-            container: [styles.buttonContainer, { backgroundColor: colors.BACKGROUND }],
+            container: [styles.buttonContainer, { backgroundColor: colors.DANGER }],
             label: [styles.buttonLabel, { color: colors.TEXT }],
         },
         success: {
-            container: [styles.buttonContainer, { backgroundColor: colors.BACKGROUND }],
+            container: [styles.buttonContainer, { backgroundColor: colors.SUCCESS }],
             label: [styles.buttonLabel, { color: colors.TEXT }],
         },
         info: {
-            container: [styles.buttonContainer, { backgroundColor: colors.BACKGROUND }],
+            container: [styles.buttonContainer, { backgroundColor: colors.INFO }],
             label: [styles.buttonLabel, { color: colors.TEXT }],
         }
     };
 
     const variantStyles = variants[variant || "default"];
 
-    // Always return a valid component
     if (!fontsLoaded) {
         return (
             <View style={[styles.loadingContainer, additionalStyles?.container]}>

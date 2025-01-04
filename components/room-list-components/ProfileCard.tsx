@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, Image, TouchableOpacity, TextInput } from "react-native";
+import {View, Text, StyleSheet, Image, TouchableOpacity, TextInput, Platform} from "react-native";
 import { useTheme } from "@/components/ThemeProvider";
 import * as ImagePicker from "expo-image-picker";
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -52,8 +52,17 @@ const ProfileCard = () => {
 
         if (!result.canceled) {
             const newProfilePicture = result.assets[0].uri;
-            setProfilePicture(newProfilePicture);
-            saveProfile({ name, profilePicture: newProfilePicture });
+
+            if (Platform.OS === 'web') {
+                const response = await fetch(newProfilePicture);
+                const blob = await response.blob();
+                const blobUrl = URL.createObjectURL(blob);
+                setProfilePicture(blobUrl);
+                saveProfile({ name, profilePicture: blobUrl });
+            } else {
+                setProfilePicture(newProfilePicture);
+                saveProfile({ name, profilePicture: newProfilePicture });
+            }
         }
     };
 
