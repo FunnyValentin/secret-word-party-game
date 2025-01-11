@@ -14,6 +14,7 @@ export default function GameScreen() {
     const [categoryArg, setCategoryArg] = useState<string[]>([]);
     const [categoryInter, setCategoryInter] = useState<string[]>([]);
     const [showWord, setShowWord] = useState(true);
+    const [impostorCaught, setImpostorCaught] = useState(false);
     const { colors } = useTheme();
 
     const styles = StyleSheet.create({
@@ -99,6 +100,8 @@ export default function GameScreen() {
         console.log("Getting room info for room:", socketService.getJoinedRoom());
         socketService.getRoomInfo(socketService.getJoinedRoom());
 
+        socketService.onRoundResult(setImpostorCaught)
+
         return () => {
             console.log("Cleaning up roomInfo listener");
             socketService.offRoomInfo(handleRoomInfo);
@@ -129,24 +132,25 @@ export default function GameScreen() {
                     <Text style={styles.subtitle}>Ronda: {gameState?.round}</Text>
                 </View>
 
-                <View style={styles.playerListContainer}>
-                    <PlayerList players={room.players} />
-                </View>
-
                 {gameState?.state === "WAITING" && (
-                    <View style={styles.centeredContent}>
-                        {isHost ? (
-                            <Button
-                                label="Start Game"
-                                onPress={handleChooseCategory}
-                                variant="primary"
-                            />
-                        ) : (
-                            <Text style={styles.waitingText}>
-                                Esperando a que el anfitrión comience el juego...
-                            </Text>
-                        )}
-                    </View>
+                    <>
+                        <View style={styles.playerListContainer}>
+                            <PlayerList players={room.players} voteMenu={false} />
+                        </View>
+                        <View style={styles.centeredContent}>
+                            {isHost ? (
+                                <Button
+                                    label="Iniciar"
+                                    onPress={handleChooseCategory}
+                                    variant="primary"
+                                />
+                            ) : (
+                                <Text style={styles.waitingText}>
+                                    Esperando a que el anfitrión comience el juego...
+                                </Text>
+                            )}
+                        </View>
+                    </>
                 )}
 
                 {gameState?.state === "CHOOSING_CATEGORY" && (
@@ -184,6 +188,19 @@ export default function GameScreen() {
                                 }}
                             />
                         </View>
+                        <PlayerList players={room.players} voteMenu={true} />
+                    </View>
+                )}
+
+                {gameState?.state === "END" && (
+                    <View style={styles.centeredContent}>
+                        <Text style={styles.title}>Partida finalizada</Text>
+                        {impostorCaught ? (<>
+                                <Text style={styles.infoText}>El impostor fue atrapado!</Text>
+                            </>)
+                        : (<>
+                                <Text style={styles.infoText}>El impostor no fue decubierto</Text>
+                            </>)}
                     </View>
                 )}
             </ScrollView>

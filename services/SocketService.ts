@@ -64,6 +64,7 @@ export interface ServerToClientEvents {
     wordCategories: (categories: { argentina: string[], internacional: string[]}) => void;
     updateGameState: (state: GameState) => void;
     playerList: (players: Player[]) => void;
+    roundResult: (impostorCaught: boolean) => void;
     error: (message: string) => void;
 }
 
@@ -74,6 +75,7 @@ export interface ClientToServerEvents {
     getRoomInfo: (roomCode: string) => void;
     setChoosingCategory: (roomCode: string) => void;
     startGame: (roomCode: string, region: "Argentina" | "Internacional", bannedCategories: string[]) => void;
+    handleVote: (roomCode: string, idVoted: string) => void;
     playerDisconnect: () => void;
 }
 
@@ -181,6 +183,14 @@ class SocketService {
         this.socket?.emit('startGame', roomCode, region, bannedCategories);
     }
 
+    handleVote(roomCode: string, idVoted: string) {
+        this.socket?.emit('handleVote', roomCode, idVoted)
+    }
+
+    onRoundResult(callback: (impostorCaught: boolean) => void) {
+        this.socket?.on('roundResult', callback)
+    }
+
     onGameStateUpdate(callback: (state: GameState) => void) {
         this.socket?.on('updateGameState', callback)
     }
@@ -189,7 +199,6 @@ class SocketService {
         this.socket?.off('updateGameState', callback)
     }
 
-    // Player management
     onPlayerList(callback: (players: Player[]) => void) {
         this.socket?.on('playerList', callback);
     }

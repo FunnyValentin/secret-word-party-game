@@ -1,14 +1,16 @@
 import React from "react";
 import { FlatList, StyleSheet, Text, View, Image } from "react-native";
-import { Player } from "@/services/SocketService";
+import {Player, socketService} from "@/services/SocketService";
 import { useTheme } from "@/components/ThemeProvider";
 import { useFonts } from "expo-font";
+import IconButton from "@/components/IconButton";
 
 type PlayerListProps = {
     players: Player[];
+    voteMenu: boolean;
 };
 
-export default function PlayerList({ players }: PlayerListProps) {
+export default function PlayerList({ players, voteMenu }: PlayerListProps) {
     const { colors } = useTheme();
     const [fontsLoaded] = useFonts({
         "Lexend-SemiBold": require('../../assets/fonts/Lexend-SemiBold.ttf'),
@@ -16,6 +18,11 @@ export default function PlayerList({ players }: PlayerListProps) {
 
     if (!fontsLoaded) {
         return <Text style={{ textAlign: "center", marginTop: 20 }}>Cargando fuentes...</Text>;
+    }
+
+    const handleVote = (idVoted: string) => {
+        const roomCode = socketService.getJoinedRoom();
+        socketService.handleVote(roomCode, idVoted);
     }
 
     const styles = StyleSheet.create({
@@ -74,6 +81,12 @@ export default function PlayerList({ players }: PlayerListProps) {
                 </Text>
                 <Text style={styles.score}>Puntos: {item.score}</Text>
             </View>
+            {voteMenu && (socketService.getSocket()?.id != item.id) && (<>
+                <IconButton
+                    icon="how-to-vote"
+                    onPress={() => handleVote(item.id)}
+                ></IconButton>
+            </>)}
         </View>
     );
 
