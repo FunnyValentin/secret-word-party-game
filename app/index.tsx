@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View, ImageBackground, Alert } from "react-native";
 import Button from "@/components/Button";
 import {Link, useRouter} from "expo-router";
+import React from "react";
 
 
 const imageSource = require("../assets/images/background-image.jpeg"); // Ensure the path is correct
@@ -8,15 +9,32 @@ const imageSource = require("../assets/images/background-image.jpeg"); // Ensure
 export default function Index() {
     const router = useRouter();
 
-    const handleButtonPress = () => {
+    const buscarSala = () => {
         router.push("/buscar-sala")
+    };
+
+    const comoJugar = () => {
+        router.push("/como-jugar")
     };
 
     return (
         <ImageBackground source={imageSource} style={styles.backgroundImage}>
             <View style={styles.overlay}>
                 <View style={styles.buttonContainer}>
-                    <Button label="BUSCAR SALA" onPress={handleButtonPress} variant="primary"></Button>
+                    <Button
+                        label="BUSCAR SALA"
+                        onPress={buscarSala}
+                        variant="primary"
+                    />
+                    <Button
+                        label="COMO JUGAR"
+                        variant="secondary"
+                        onPress={comoJugar}
+                        additionalStyles={{
+                            container: { marginTop: 15, height: 40, width: 200, alignSelf: "center" },
+                            label: { fontSize: 14 },
+                        }}
+                    />
                 </View>
             </View>
         </ImageBackground>
