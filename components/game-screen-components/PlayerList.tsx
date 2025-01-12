@@ -1,20 +1,25 @@
 import React from "react";
 import { FlatList, StyleSheet, Text, View, Image } from "react-native";
-import {Player, socketService} from "@/services/SocketService";
+import { Player, socketService } from "@/services/SocketService";
 import { useTheme } from "@/components/ThemeProvider";
 import { useFonts } from "expo-font";
 import IconButton from "@/components/IconButton";
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 type PlayerListProps = {
     players: Player[];
     voteMenu: boolean;
+    votes: { [key: string]: string };
 };
 
-export default function PlayerList({ players, voteMenu }: PlayerListProps) {
+export default function PlayerList({ players, voteMenu, votes }: PlayerListProps) {
     const { colors } = useTheme();
     const [fontsLoaded] = useFonts({
         "Lexend-SemiBold": require('../../assets/fonts/Lexend-SemiBold.ttf'),
     });
+    const currentID = socketService.getSocket()?.id;
+    const hasVoted = currentID ? !!votes[currentID] : false;
+    const votedPlayerID = currentID ? votes[currentID] : null;
 
     if (!fontsLoaded) {
         return <Text style={{ textAlign: "center", marginTop: 20 }}>Cargando fuentes...</Text>;
@@ -23,7 +28,7 @@ export default function PlayerList({ players, voteMenu }: PlayerListProps) {
     const handleVote = (idVoted: string) => {
         const roomCode = socketService.getJoinedRoom();
         socketService.handleVote(roomCode, idVoted);
-    }
+    };
 
     const styles = StyleSheet.create({
         listContainer: {
@@ -60,12 +65,18 @@ export default function PlayerList({ players, voteMenu }: PlayerListProps) {
             fontWeight: "bold",
             color: colors.TEXT,
         },
+        underlined: {
+            textDecorationLine: "underline",
+        },
         host: {
             color: colors.PRIMARY,
         },
         score: {
             fontSize: 14,
             color: colors.TEXT_SECONDARY,
+        },
+        voteIcon: {
+            marginLeft: 10,
         },
     });
 
@@ -76,17 +87,33 @@ export default function PlayerList({ players, voteMenu }: PlayerListProps) {
                 style={styles.avatar}
             />
             <View style={styles.infoContainer}>
-                <Text style={[styles.name, item.isHost && styles.host]}>
+                {/* Underline the current player's name */}
+                <Text
+                    style={[
+                        styles.name,
+                        item.isHost && styles.host,
+                        item.id === currentID && styles.underlined,
+                    ]}
+                >
                     {item.name || "Player"}
                 </Text>
                 <Text style={styles.score}>Puntos: {item.score}</Text>
             </View>
-            {voteMenu && (socketService.getSocket()?.id != item.id) && (<>
+            {voteMenu && (socketService.getSocket()?.id != item.id) && !hasVoted && (
                 <IconButton
                     icon="how-to-vote"
                     onPress={() => handleVote(item.id)}
-                ></IconButton>
-            </>)}
+                />
+            )}
+            {/* Show skull icon if this player was voted */}
+            {votedPlayerID === item.id && (
+                <MaterialCommunityIcons
+                    name="skull-outline"
+                    size={24}
+                    color={colors.TEXT}
+                    style={styles.voteIcon}
+                />
+            )}
         </View>
     );
 

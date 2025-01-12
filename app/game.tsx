@@ -1,11 +1,12 @@
-import React, { useEffect, useState } from "react";
-import { StyleSheet, View, Text, ScrollView, SafeAreaView } from "react-native";
-import { useTheme } from "@/components/ThemeProvider";
-import socketService, { GameState, Room } from "@/services/SocketService";
+import React, {useCallback, useEffect, useState} from "react";
+import {SafeAreaView, ScrollView, StyleSheet, Text, View} from "react-native";
+import {useTheme} from "@/components/ThemeProvider";
+import socketService, {GameState, Room} from "@/services/SocketService";
 import Button from "@/components/Button";
 import PlayerList from "@/components/game-screen-components/PlayerList";
 import CategorySelection from "@/components/game-screen-components/CategorySelection";
 import IconButton from "@/components/IconButton";
+import { useFocusEffect } from "expo-router";
 
 export default function GameScreen() {
     const [room, setRoom] = useState<Room>();
@@ -108,6 +109,16 @@ export default function GameScreen() {
         };
     }, []);
 
+    useFocusEffect(
+        useCallback(() => {
+            return () => {
+                console.log("Desconectando jugador");
+                socketService.disconnectPlayer();
+            };
+        }, [])
+    );
+
+
     const handleChooseCategory = () => {
         socketService.setChoosingCategory(socketService.getJoinedRoom());
         socketService.onCategories((data) => {
@@ -115,6 +126,11 @@ export default function GameScreen() {
             setCategoryInter(data.internacional);
         });
     };
+
+    const handleNextRound = () => {
+        const roomCode = socketService.getJoinedRoom();
+        socketService.nextRound(roomCode);
+    }
 
     if (!room) {
         return (
@@ -135,7 +151,11 @@ export default function GameScreen() {
                 {gameState?.state === "WAITING" && (
                     <>
                         <View style={styles.playerListContainer}>
-                            <PlayerList players={room.players} voteMenu={false} />
+                            <PlayerList
+                                players={room.players}
+                                voteMenu={false}
+                                votes={room.gameState.votes}
+                            />
                         </View>
                         <View style={styles.centeredContent}>
                             {isHost ? (
@@ -188,7 +208,11 @@ export default function GameScreen() {
                                 }}
                             />
                         </View>
-                        <PlayerList players={room.players} voteMenu={true} />
+                        <PlayerList
+                            players={room.players}
+                            voteMenu={true}
+                            votes={room.gameState.votes}
+                        />
                     </View>
                 )}
 
@@ -201,6 +225,24 @@ export default function GameScreen() {
                         : (<>
                                 <Text style={styles.infoText}>El impostor no fue decubierto</Text>
                             </>)}
+                        {isHost ? (<>
+                            <Button
+                                label="Nueva partida"
+                                variant="primary"
+                                onPress={handleNextRound}
+                            />
+                            <Button
+                                label="Cambiar categorias"
+                                variant="secondary"
+                                onPress={handleChooseCategory}
+                                additionalStyles={{
+                                    container: { marginTop: 15, height: 40, width: 200 },
+                                    label: { fontSize: 14 },
+                                }}
+                            />
+                        </>) : (<>
+                            <Text style={styles.infoText}>Esperando que el anfitrión empiece una nueva partida</Text>
+                        </>)}
                     </View>
                 )}
             </ScrollView>

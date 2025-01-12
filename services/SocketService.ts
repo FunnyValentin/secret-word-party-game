@@ -76,6 +76,7 @@ export interface ClientToServerEvents {
     setChoosingCategory: (roomCode: string) => void;
     startGame: (roomCode: string, region: "Argentina" | "Internacional", bannedCategories: string[]) => void;
     handleVote: (roomCode: string, idVoted: string) => void;
+    nextRound: (roomCode: string) => void;
     playerDisconnect: () => void;
 }
 
@@ -189,6 +190,10 @@ class SocketService {
 
     onRoundResult(callback: (impostorCaught: boolean) => void) {
         this.socket?.on('roundResult', callback)
+    }
+
+    nextRound(roomCode: string) {
+        this.socket?.emit('nextRound', roomCode)
     }
 
     onGameStateUpdate(callback: (state: GameState) => void) {
