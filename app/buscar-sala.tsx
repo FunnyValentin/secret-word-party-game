@@ -5,9 +5,12 @@ import Divider from "@/components/Divider";
 import ProfileCard from "@/components/room-list-components/ProfileCard";
 import ThemeSelector from "@/components/ThemeSelector";
 import RoomList from "@/components/room-list-components/RoomList";
+import {useNetworkState} from "expo-network";
+import {MaterialIcons} from "@expo/vector-icons";
 
 export default function BuscarSala() {
     const { colors } = useTheme();
+    const networkState = useNetworkState();
 
     const [fontsLoaded] = useFonts({
         "Lexend-SemiBold": require('../assets/fonts/Lexend-SemiBold.ttf'),
@@ -15,6 +18,19 @@ export default function BuscarSala() {
 
     if (!fontsLoaded) {
         return <Text>Cargando fuentes...</Text>;
+    }
+
+    if(!networkState.isConnected) {
+        return (
+            <View style={[styles.container, {backgroundColor: colors.BACKGROUND}]}>
+                <Text style={[styles.title, {color: colors.TEXT}]}>No estas conectado</Text>
+                <MaterialIcons
+                    name="signal-cellular-off"
+                    size={20}
+                    color={colors.TEXT}
+                />
+            </View>
+        );
     }
 
     return(

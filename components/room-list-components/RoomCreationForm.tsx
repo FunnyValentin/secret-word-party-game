@@ -43,11 +43,9 @@ export default function RoomCreationForm({ onBack, hostName, hostAvatar }: RoomC
             handleCreateRoom()
             socketService.onRoomCreated(({ roomCode }) => {
                 socketService.setJoinedRoom(roomCode)
-            });
-            resetErrors();
-            setTimeout(() => {
+                resetErrors();
                 router.push("/game");
-            }, 200)
+            });
         }
     };
 

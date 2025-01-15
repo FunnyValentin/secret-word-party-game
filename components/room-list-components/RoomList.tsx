@@ -1,10 +1,12 @@
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import {
     StyleSheet,
     View,
     Text,
     FlatList,
-    TouchableOpacity, Alert
+    TouchableOpacity,
+    Modal,
+    TextInput,
 } from "react-native";
 import { useTheme } from "@/components/ThemeProvider";
 import { useFonts } from "expo-font";
@@ -12,10 +14,11 @@ import IconButton from "@/components/IconButton";
 import Divider from "@/components/Divider";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import RoomCreationForm from "@/components/room-list-components/RoomCreationForm";
-import socketService, {RoomListItem} from "@/services/SocketService";
-import {router} from "expo-router";
+import socketService, { RoomListItem } from "@/services/SocketService";
+import { router } from "expo-router";
+import Button from "@/components/Button";
 
-export default function RoomList () {
+export default function RoomList() {
     const [rooms, setRooms] = useState<RoomListItem[]>([]);
     const [fontsLoaded] = useFonts({
         "Lexend-SemiBold": require("../../assets/fonts/Lexend-SemiBold.ttf"),
@@ -24,13 +27,14 @@ export default function RoomList () {
     const [isCreatingRoom, setIsCreatingRoom] = useState(false);
     const [hostName, setHostName] = useState("");
     const [hostProfilePicture, setHostProfilePicture] = useState<string>("");
+    const [showPasswordModal, setShowPasswordModal] = useState(false);
+    const [selectedRoom, setSelectedRoom] = useState<RoomListItem | null>(null);
+    const [password, setPassword] = useState("");
 
     const STORAGE_KEY = "player_profile";
 
     useEffect(() => {
-        loadProfile().then(() => {
-            console.log("Perfil cargado.");
-        });
+        loadProfile().then(() => console.log("Perfil cargado."));
         reloadRooms();
     }, []);
 
@@ -44,8 +48,8 @@ export default function RoomList () {
             if (savedProfile) {
                 const { name, profilePicture } = JSON.parse(savedProfile);
                 if (!name) {
-                    alert("Por favor ingresa tu nombre")
-                    return
+                    alert("Por favor ingresa tu nombre");
+                    return;
                 }
                 setHostName(name);
                 setHostProfilePicture(profilePicture);
@@ -57,21 +61,8 @@ export default function RoomList () {
 
     const handleJoinRoom = (room: RoomListItem) => {
         if (room.isPasswordProtected) {
-            Alert.prompt(
-                "Contraseña requerida",
-                "Ingrese la contraseña de la sala",
-                [
-                    {
-                        text: "Cancelar",
-                        style: "cancel"
-                    },
-                    {
-                        text: "Unirse",
-                        onPress: (password) => connectToRoom(room, password || "")
-                    }
-                ],
-                "secure-text"
-            );
+            setSelectedRoom(room);
+            setShowPasswordModal(true);
         } else {
             connectToRoom(room, "");
         }
@@ -79,24 +70,31 @@ export default function RoomList () {
 
     const reloadRooms = () => {
         socketService.getRooms();
-        socketService.onRoomList(( rooms ) => {
-            setRooms(rooms)
-        });
-    }
+        socketService.onRoomList((rooms) => setRooms(rooms));
+    };
 
     const connectToRoom = (room: RoomListItem, password: string) => {
         socketService.joinRoom({
             roomCode: room.code,
             password,
             playerName: hostName,
-            playerAvatar: hostProfilePicture
-        })
-        socketService.onJoinedRoom(({roomCode}) => {
-            socketService.setJoinedRoom(roomCode)
-        })
-        setTimeout(() => {
-            router.push("/game");
-        }, 200)
+            playerAvatar: hostProfilePicture,
+        });
+        socketService.onJoinedRoom(({ roomCode }) => {
+            socketService.setJoinedRoom(roomCode);
+            setTimeout(() => {
+                router.push("/game");
+            }, 200);
+        });
+    };
+
+    const handleModalSubmit = () => {
+        if (selectedRoom) {
+            connectToRoom(selectedRoom, password);
+        }
+        setPassword("");
+        setSelectedRoom(null);
+        setShowPasswordModal(false);
     };
 
     const styles = StyleSheet.create({
@@ -152,21 +150,32 @@ export default function RoomList () {
             color: colors.TEXT,
             marginTop: 20,
         },
+        modalContainer: {
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+        },
+        modalContent: {
+            width: "80%",
+            backgroundColor: colors.CARD_BACKGROUND,
+            padding: 20,
+            borderRadius: 10,
+            alignItems: "center",
+        },
         input: {
-            color: colors.TEXT,
-            marginBottom: 16,
+            width: "100%",
             borderWidth: 1,
             borderColor: colors.BORDER,
             borderRadius: 8,
             padding: 12,
             fontSize: 16,
-        },
-        label: {
             color: colors.TEXT,
-            marginBottom: 8,
-            fontSize: 16,
-            fontFamily: "Lexend-SemiBold",
-        }
+            marginBottom: 20,
+        },
+        button: {
+            marginTop: 10,
+        },
     });
 
     if (!fontsLoaded) {
@@ -224,13 +233,48 @@ export default function RoomList () {
                                     </Text>
                                 </TouchableOpacity>
                             )}
-                            ListEmptyComponent={<Text style={styles.emptyText}>No hay salas disponibles</Text>}
+                            ListEmptyComponent={
+                                <Text style={styles.emptyText}>No hay salas disponibles</Text>
+                            }
                             keyExtractor={(item, index) => `${item.roomName}-${index}`}
                         />
                     </View>
                 </View>
             )}
+            <Modal visible={showPasswordModal} transparent={true} animationType="fade">
+                <View style={styles.modalContainer}>
+                    <View style={styles.modalContent}>
+                        <Text style={styles.title}>Contraseña requerida</Text>
+                        <TextInput
+                            style={styles.input}
+                            secureTextEntry
+                            placeholder="Ingrese la contraseña"
+                            placeholderTextColor={colors.TEXT_SECONDARY}
+                            value={password}
+                            onChangeText={setPassword}
+                        />
+                        <Button
+                            label="Unirse"
+                            onPress={handleModalSubmit}
+                            variant="primary"
+                            additionalStyles={{
+                                container: {width: 160}
+                            }}
+                        />
+                        <Button
+                            label="Cancelar"
+                            onPress={() => {
+                                setShowPasswordModal(false);
+                                setPassword("");
+                            }}
+                            variant="danger"
+                            additionalStyles={{
+                                container: {marginTop: 15, width: 120, height: 35}
+                            }}
+                        />
+                    </View>
+                </View>
+            </Modal>
         </>
     );
-};
-
+}
