@@ -18,7 +18,7 @@ export interface GameState {
     bannedCategories: string[];
     impostorID: string | null;
     votes: Record<string, string>;
-    state: "WAITING" | "CHOOSING_CATEGORY" | "PLAYING" | "END";
+    state: "WAITING" | "CHOOSING_CATEGORY" | "PLAYING" | "END" | "SKIPPED";
 }
 
 export interface Room {
@@ -77,6 +77,7 @@ export interface ClientToServerEvents {
     startGame: (roomCode: string, region: "Argentina" | "Internacional", bannedCategories: string[]) => void;
     handleVote: (roomCode: string, idVoted: string) => void;
     nextRound: (roomCode: string) => void;
+    skipRound: (roomCode: string) => void;
     playerDisconnect: () => void;
 }
 
@@ -194,6 +195,10 @@ class SocketService {
 
     nextRound(roomCode: string) {
         this.socket?.emit('nextRound', roomCode)
+    }
+
+    skipRound(roomCode: string) {
+        this.socket?.emit('skipRound', roomCode)
     }
 
     onGameStateUpdate(callback: (state: GameState) => void) {

@@ -50,6 +50,9 @@ export default function RoomCreationForm({ onBack, hostName, hostAvatar }: RoomC
     };
 
     const handleCreateRoom = () => {
+        if (socketService.getJoinedRoom() != "") {
+            socketService.disconnectPlayer();
+        }
         socketService.createRoom({
             roomName: roomName,
             isPasswordProtected: isPasswordProtected,

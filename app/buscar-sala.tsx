@@ -28,6 +28,7 @@ export default function BuscarSala() {
                     name="signal-cellular-off"
                     size={20}
                     color={colors.TEXT}
+                    style={styles.icon}
                 />
             </View>
         );
@@ -66,5 +67,9 @@ const styles = StyleSheet.create({
         paddingLeft: 15,
         fontSize: 24,
         fontFamily: "Lexend-SemiBold",
+    },
+    icon: {
+        marginTop: 20,
+        alignSelf: "center",
     }
 })

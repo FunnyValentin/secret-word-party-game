@@ -60,7 +60,7 @@ export default function RoomList() {
     };
 
     const handleJoinRoom = (room: RoomListItem) => {
-        if (room.isPasswordProtected) {
+        if (room.isPasswordProtected && socketService.getJoinedRoom() != room.code) {
             setSelectedRoom(room);
             setShowPasswordModal(true);
         } else {
@@ -74,6 +74,9 @@ export default function RoomList() {
     };
 
     const connectToRoom = (room: RoomListItem, password: string) => {
+        if (socketService.getJoinedRoom() != room.code) {
+            socketService.disconnectPlayer();
+        }
         socketService.joinRoom({
             roomCode: room.code,
             password,

@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 import {SafeAreaView, ScrollView, StyleSheet, Text, View, Image} from "react-native";
 import {useTheme} from "@/components/ThemeProvider";
 import socketService, {GameState, Room} from "@/services/SocketService";
@@ -6,7 +6,8 @@ import Button from "@/components/Button";
 import PlayerList from "@/components/game-screen-components/PlayerList";
 import CategorySelection from "@/components/game-screen-components/CategorySelection";
 import IconButton from "@/components/IconButton";
-import { useFocusEffect } from "expo-router";
+import {router} from "expo-router";
+import ThemeSelector from "@/components/ThemeSelector";
 
 export default function GameScreen() {
     const [room, setRoom] = useState<Room>();
@@ -99,40 +100,53 @@ export default function GameScreen() {
             borderWidth: 2,
             borderColor: colors.TEXT,
         },
+        bottomButtonContainer: {
+            position: 'absolute',
+            bottom: 20,
+            left: 16,
+            right: 16,
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+        },
+        exitButton: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            paddingVertical: 12,
+            paddingHorizontal: 24,
+            borderRadius: 30,
+        },
+        skipButtonContainer: {
+            position: 'relative',
+            marginVertical: 10,
+            alignItems: 'center',
+            paddingHorizontal: 16,
+        }
     });
 
     useEffect(() => {
         const handleRoomInfo = (updatedRoom: Room) => {
-            console.log("Room update received", updatedRoom);
             setRoom({ ...updatedRoom });
             setIsHost(socketService.getSocket()?.id === updatedRoom.players.find(p => p.isHost)?.id);
             setGameState({ ...updatedRoom.gameState });
         };
 
-        console.log("Setting up roomInfo listener");
         socketService.onRoomInfo(handleRoomInfo);
-
-        console.log("Getting room info for room:", socketService.getJoinedRoom());
         socketService.getRoomInfo(socketService.getJoinedRoom());
 
         socketService.onRoundResult(setImpostorCaught)
 
         return () => {
-            console.log("Cleaning up roomInfo listener");
             socketService.offRoomInfo(handleRoomInfo);
         };
     }, []);
 
-    useFocusEffect(
-        useCallback(() => {
-            return () => {
-                console.log("Desconectando jugador");
-                socketService.setJoinedRoom('');
-                socketService.disconnectPlayer();
-            };
-        }, [])
-    );
-
+    const handleDisconnect = () => {
+        socketService.setJoinedRoom("");
+        socketService.disconnectPlayer();
+        router.push("/buscar-sala");
+    }
 
     const handleChooseCategory = () => {
         socketService.setChoosingCategory(socketService.getJoinedRoom());
@@ -145,6 +159,11 @@ export default function GameScreen() {
     const handleNextRound = () => {
         const roomCode = socketService.getJoinedRoom();
         socketService.nextRound(roomCode);
+    }
+
+    const handleSkipRound = () => {
+        const roomCode = socketService.getJoinedRoom();
+        socketService.skipRound(roomCode);
     }
 
     if (socketService.getJoinedRoom() == '') {
@@ -242,12 +261,27 @@ export default function GameScreen() {
                             voteMenu={true}
                             votes={room.gameState.votes}
                         />
+                        {isHost && (
+                            <View style={styles.skipButtonContainer}>
+                                <IconButton
+                                    icon="skip-next"
+                                    onPress={handleSkipRound}
+                                    variant="secondary"
+                                    label="Saltear ronda"
+                                    additionalStyles={{
+                                        container: styles.exitButton,
+                                        icon: { fontSize: 24 },
+                                        text: { fontSize: 16 },
+                                    }}
+                                />
+                            </View>
+                        )}
                     </View>
                 )}
 
                 {gameState?.state === "END" && (
                     <View style={styles.centeredContent}>
-                        <Text style={styles.title}>Partida finalizada</Text>
+                        <Text style={styles.title}>Ronda finalizada</Text>
                         {impostorCaught ? (
                             <>
                                 <Text style={styles.infoText}>¡El impostor fue atrapado!</Text>
@@ -256,7 +290,6 @@ export default function GameScreen() {
                             <Text style={styles.infoText}>El impostor no fue descubierto</Text>
                         )}
 
-                        {/* Display impostor's name and avatar */}
                         {room.players.find(p => p.id == gameState.impostorID) && (
                             <View style={styles.impostorContainer}>
                                 <Text style={styles.infoText}>
@@ -271,30 +304,99 @@ export default function GameScreen() {
                                 </Text>
                             </View>
                         )}
-
-                        {isHost ? (
-                            <>
-                                <Button
-                                    label="Nueva partida"
-                                    variant="primary"
-                                    onPress={handleNextRound}
-                                />
-                                <Button
-                                    label="Cambiar categorias"
-                                    variant="secondary"
-                                    onPress={handleChooseCategory}
-                                    additionalStyles={{
-                                        container: { marginTop: 15, height: 40, width: 200 },
-                                        label: { fontSize: 14 },
-                                    }}
-                                />
-                            </>
+                        {room.players.length >= 3 ? (
+                            isHost ? (
+                                <>
+                                    <Button
+                                        label="Nueva partida"
+                                        variant="primary"
+                                        onPress={handleNextRound}
+                                    />
+                                    <Button
+                                        label="Cambiar categorias"
+                                        variant="secondary"
+                                        onPress={handleChooseCategory}
+                                        additionalStyles={{
+                                            container: { marginTop: 15, height: 40, width: 200 },
+                                            label: { fontSize: 14 },
+                                        }}
+                                    />
+                                </>
+                            ) : (
+                                <Text style={styles.infoText}>
+                                    Esperando que el anfitrión empiece una nueva partida
+                                </Text>
+                            )
                         ) : (
-                            <Text style={styles.infoText}>Esperando que el anfitrión empiece una nueva partida</Text>
+                            <Text style={styles.waitingText}>
+                                Esperando a que haya jugadores suficientes...
+                            </Text>
                         )}
+
+                    </View>
+                )}
+
+                {gameState?.state === "SKIPPED" && (
+                    <View style={styles.centeredContent}>
+                        <Text style={styles.title}>Ronda salteada</Text>
+
+                        {room.players.find(p => p.id == gameState.impostorID) && (
+                            <View style={styles.impostorContainer}>
+                                <Text style={styles.infoText}>
+                                    ¡El impostor era {room.players.find(p => p.id == gameState.impostorID)?.name}!
+                                </Text>
+                                <Image
+                                    source={{ uri: room.players.find(p => p.id == gameState.impostorID)?.avatar }}
+                                    style={styles.impostorAvatar}
+                                />
+                            </View>
+                        )}
+                        {room.players.length >= 3 ? (
+                            isHost ? (
+                                <>
+                                    <Button
+                                        label="Nueva partida"
+                                        variant="primary"
+                                        onPress={handleNextRound}
+                                    />
+                                    <Button
+                                        label="Cambiar categorias"
+                                        variant="secondary"
+                                        onPress={handleChooseCategory}
+                                        additionalStyles={{
+                                            container: { marginTop: 15, height: 40, width: 200 },
+                                            label: { fontSize: 14 },
+                                        }}
+                                    />
+                                </>
+                            ) : (
+                                <Text style={styles.infoText}>
+                                    Esperando que el anfitrión empiece una nueva partida
+                                </Text>
+                            )
+                        ) : (
+                            <Text style={styles.waitingText}>
+                                Esperando a que haya jugadores suficientes...
+                            </Text>
+                        )}
+
                     </View>
                 )}
             </ScrollView>
+            <View style={styles.bottomButtonContainer}>
+                <ThemeSelector />
+                <IconButton
+                    icon="exit-to-app"
+                    onPress={handleDisconnect}
+                    variant="danger"
+                    label="Salir"
+                    additionalStyles={{
+                        container: styles.exitButton,
+                        icon: { fontSize: 24 },
+                        text: { fontSize: 16 },
+                    }}
+                />
+            </View>
         </SafeAreaView>
     );
 }

@@ -3,9 +3,11 @@ import {View, Text, StyleSheet, Image, TouchableOpacity, TextInput, Platform} fr
 import { useTheme } from "@/components/ThemeProvider";
 import * as ImagePicker from "expo-image-picker";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {useRouter} from "expo-router";
 
 const ProfileCard = () => {
     const { colors } = useTheme();
+    const router = useRouter();
     const [name, setName] = useState("");
     const [isEditingName, setIsEditingName] = useState(false);
     const [profilePicture, setProfilePicture] = useState<string>("");
@@ -39,7 +41,9 @@ const ProfileCard = () => {
 
     const handleEditName = () => {
         if (isEditingName) {
-            saveProfile({ name, profilePicture });
+            saveProfile({ name, profilePicture }).then(() => {
+                router.replace('/buscar-sala');
+            });
         }
         setIsEditingName(!isEditingName);
     };
@@ -58,10 +62,14 @@ const ProfileCard = () => {
                 const blob = await response.blob();
                 const blobUrl = URL.createObjectURL(blob);
                 setProfilePicture(blobUrl);
-                saveProfile({ name, profilePicture: blobUrl });
+                saveProfile({ name, profilePicture: blobUrl }).then(() => {
+                    loadProfile();
+                });
             } else {
                 setProfilePicture(newProfilePicture);
-                saveProfile({ name, profilePicture: newProfilePicture });
+                saveProfile({ name, profilePicture: newProfilePicture }).then(() => {
+                    router.replace('/buscar-sala');
+                });
             }
         }
     };

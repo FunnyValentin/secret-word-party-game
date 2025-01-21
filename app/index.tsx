@@ -1,7 +1,8 @@
-import { StyleSheet, Text, View, ImageBackground, Alert } from "react-native";
+import { StyleSheet, View, ImageBackground } from "react-native";
 import Button from "@/components/Button";
 import {Link, useRouter} from "expo-router";
 import React from "react";
+import socketService from "@/services/SocketService";
 
 
 const imageSource = require("../assets/images/background-image.jpeg"); // Ensure the path is correct
@@ -13,6 +14,10 @@ export default function Index() {
         router.push("/buscar-sala")
     };
 
+    const game = () => {
+        router.push("/game");
+    }
+
     const comoJugar = () => {
         router.push("/como-jugar")
     };
@@ -21,11 +26,21 @@ export default function Index() {
         <ImageBackground source={imageSource} style={styles.backgroundImage}>
             <View style={styles.overlay}>
                 <View style={styles.buttonContainer}>
-                    <Button
+                    {socketService.getJoinedRoom() != "" ? (<>
+                            <Button
+                                label="VOLVER A LA SALA"
+                                onPress={game}
+                                variant="primary"
+                            />
+                        </>
+                    ) : (<>
+                        <Button
                         label="BUSCAR SALA"
                         onPress={buscarSala}
-                        variant="primary"
-                    />
+                    variant="primary"
+                />
+                        </>)}
+
                     <Button
                         label="COMO JUGAR"
                         variant="secondary"
