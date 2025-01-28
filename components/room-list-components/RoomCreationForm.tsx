@@ -27,6 +27,7 @@ export default function RoomCreationForm({ onBack, hostName, hostAvatar }: RoomC
     const { errors, validateRoom, resetErrors } = useRoomValidation();
     const [roomName, setRoomName] = useState("");
     const [isPasswordProtected, setIsPasswordProtected] = useState(false);
+    const [isTimeLimited, setIsTimeLimited] = useState(false);
     const [password, setPassword] = useState("");
     const [maxPlayers, setMaxPlayers] = useState("3");
     const [showPassword, setShowPassword] = useState(false);
@@ -151,6 +152,21 @@ export default function RoomCreationForm({ onBack, hostName, hostAvatar }: RoomC
                                         />
                                     </View>
                                     {errors.password && <Text style={[styles.error, {color: colors.DANGER,}]}>{errors.password}</Text>}
+                                </>
+                            )}
+
+                            <View style={styles.switchContainer}>
+                                <Text style={[styles.label, {color: colors.TEXT}]}>Limite de tiempo</Text>
+                                <Switch
+                                    value={isTimeLimited}
+                                    onValueChange={setIsTimeLimited}
+                                    trackColor={{ false: '#7e7e7e', true: colors.PRIMARY_MUTED }}
+                                    thumbColor={isTimeLimited ? colors.PRIMARY : '#e2e2e2'}
+                                />
+                            </View>
+
+                            {isTimeLimited && (
+                                <>
                                 </>
                             )}
 

@@ -52,25 +52,13 @@ const ProfileCard = () => {
         let result = await ImagePicker.launchImageLibraryAsync({
             allowsEditing: true,
             quality: 1,
+            base64: true,
         });
 
         if (!result.canceled) {
-            const newProfilePicture = result.assets[0].uri;
-
-            if (Platform.OS === 'web') {
-                const response = await fetch(newProfilePicture);
-                const blob = await response.blob();
-                const blobUrl = URL.createObjectURL(blob);
-                setProfilePicture(blobUrl);
-                saveProfile({ name, profilePicture: blobUrl }).then(() => {
-                    loadProfile();
-                });
-            } else {
-                setProfilePicture(newProfilePicture);
-                saveProfile({ name, profilePicture: newProfilePicture }).then(() => {
-                    router.replace('/buscar-sala');
-                });
-            }
+            const base64Image = `data:image/jpeg;base64,${result.assets[0].base64}`;
+            setProfilePicture(base64Image);
+            await saveProfile({ name, profilePicture: base64Image });
         }
     };
 
